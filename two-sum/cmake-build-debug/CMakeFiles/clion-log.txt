@@ -1,0 +1,4 @@
+/opt/homebrew/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/ninja -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_CXX_COMPILER=/usr/bin/g++ -G Ninja -S /Users/mud/Projects/cProjects/leetcode/two-sum -B /Users/mud/Projects/cProjects/leetcode/two-sum/cmake-build-debug
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /Users/mud/Projects/cProjects/leetcode/two-sum/cmake-build-debug
