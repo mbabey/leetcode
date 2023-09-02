@@ -132,6 +132,7 @@ struct LookupChar *getAlphabet(const char *text, int *alphabet_size)
         }
     }
     
+    // TODO: may not be necessary if method of counting chars is changed.
     // Add the ' ' character to the alphabet and increase the alphabet size by one.
     (*(alphabet + *alphabet_size)).c = ' ';
     (*(alphabet + *alphabet_size)).shift = 0;
@@ -241,21 +242,6 @@ bool findMatch(char *text, const char *word, struct LookupChar *lookup_table, in
             shift = getShift(comparison_char, lookup_table, lookup_table_size);
             text_index += shift;
         }
-
-
-//        word_index = word_len - 1;
-//        for (int ti = text_index; word_index >= 0; --word_index, --ti)
-//        {
-//            // If there is not a match, stop comparing.
-//            if (*(text + ti) != *(word + word_index))
-//            {
-//                match = false;
-//                break;
-//            }
-//
-//            match = true;
-//        }
-    
     }
     
     return match;
