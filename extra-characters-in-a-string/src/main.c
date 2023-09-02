@@ -12,6 +12,12 @@ struct LookupChar
     int  shift;
 };
 
+struct StartEndPair
+{
+    int start;
+    int end;
+};
+
 int minExtraChar(char *s, char **dictionary, int dictionarySize);
 
 struct LookupChar *getAlphabet(const char *text, int *alphabet_size);
@@ -22,8 +28,8 @@ void setLookupTable(const char *word, struct LookupChar *lookup_table, int looku
 
 int setShift(char c, const char *word);
 
-bool findMatch(char *text, const char *word, struct LookupChar *lookup_table, int lookup_table_size, int *start_index,
-               int *end_index);
+void findMatches(char *text, const char *word, struct LookupChar *lookup_table, int lookup_table_size,
+                 struct StartEndPair *start_end_pairs, int *start_end_pairs_size);
 
 int getShift(char c, struct LookupChar *lookup_table, int lookup_table_size);
 
@@ -40,16 +46,16 @@ int main(void)
     const char *dictionary[16];
     int        dictionarySize = 16;
     
-    dictionary[0] = "ox";
-    dictionary[1] = "lb";
-    dictionary[2] = "diz";
-    dictionary[3] = "gu";
-    dictionary[4] = "v";
-    dictionary[5] = "ksv";
-    dictionary[6] = "o";
-    dictionary[7] = "nuq";
-    dictionary[8] = "r";
-    dictionary[9] = "txhe";
+    dictionary[0]  = "ox";
+    dictionary[1]  = "lb";
+    dictionary[2]  = "diz";
+    dictionary[3]  = "gu";
+    dictionary[4]  = "v";
+    dictionary[5]  = "ksv";
+    dictionary[6]  = "o";
+    dictionary[7]  = "nuq";
+    dictionary[8]  = "r";
+    dictionary[9]  = "txhe";
     dictionary[10] = "e";
     dictionary[11] = "wmo";
     dictionary[12] = "cehy";
@@ -66,7 +72,7 @@ int main(void)
 
 int minExtraChar(char *s, char **dictionary, int dictionarySize)
 {
-    int  remaining_chars;
+    int remaining_chars;
     
     struct LookupChar *alphabet;
     int               alphabet_size;
@@ -78,22 +84,21 @@ int minExtraChar(char *s, char **dictionary, int dictionarySize)
         return -1;
     }
     
-    int start_index;
-    int end_index;
-    bool match_found;
+    struct StartEndPair *start_end_pairs;
+    int                 start_end_pairs_size;
+    
+    start_end_pairs_size = 0;
+    start_end_pairs      = NULL;
     
     // For each word in the dictionary, find matches in s.
     for (int dict_i = 0; dict_i < dictionarySize; ++dict_i)
     {
         setLookupTable(*(dictionary + dict_i), alphabet, alphabet_size);
-        match_found = findMatch(s, *(dictionary + dict_i), alphabet, alphabet_size, &start_index, &end_index);
-        if (match_found)
-        {
-            // set *(dict + i) in s to ' '
-            clearChars(s, start_index, end_index);
-            // Must remove the string AFTER all strings have been checked.
-        }
+        findMatches(s, *(dictionary + dict_i), alphabet, alphabet_size,
+                    start_end_pairs, &start_end_pairs_size);
     }
+    
+    
     
     free(alphabet);
     remaining_chars = countRemainingChars(s);
@@ -126,16 +131,16 @@ struct LookupChar *getAlphabet(const char *text, int *alphabet_size)
     {
         if (identifier[i])
         {
-            (*(alphabet + a)).c     = i + ALPHA_ASCII_MOD;
-            (*(alphabet + a)).shift = 0;
+            (alphabet + a)->c     = i + ALPHA_ASCII_MOD;
+            (alphabet + a)->shift = 0;
             ++a;
         }
     }
     
     // TODO: may not be necessary if method of counting chars is changed.
     // Add the ' ' character to the alphabet and increase the alphabet size by one.
-    (*(alphabet + *alphabet_size)).c = ' ';
-    (*(alphabet + *alphabet_size)).shift = 0;
+    (alphabet + *alphabet_size)->c     = ' ';
+    (alphabet + *alphabet_size)->shift = 0;
     ++(*alphabet_size);
     
     free(identifier);
@@ -173,7 +178,7 @@ void setLookupTable(const char *word, struct LookupChar *lookup_table, int looku
 {
     for (int i = 0; i < lookup_table_size; ++i)
     {
-        (*(lookup_table + i)).shift = setShift((*(lookup_table + i)).c, word);
+        (lookup_table + i)->shift = setShift((lookup_table + i)->c, word);
     }
 }
 
@@ -205,11 +210,9 @@ int setShift(char c, const char *word)
     return shift;
 }
 
-bool findMatch(char *text, const char *word, struct LookupChar *lookup_table, int lookup_table_size, int *start_index,
-               int *end_index)
+void findMatches(char *text, const char *word, struct LookupChar *lookup_table, int lookup_table_size,
+                 struct StartEndPair *start_end_pairs, int *start_end_pairs_size)
 {
-    bool match = false;
-    
     int text_len;
     int word_len;
     int text_index;
@@ -224,7 +227,7 @@ bool findMatch(char *text, const char *word, struct LookupChar *lookup_table, in
     // Check the lookup table to see how far to move word across text.
     // Stop when a match is found or when the last character of word falls off the end of text.
     
-    while (!match && text_index + word_len - 1 < text_len)
+    while (text_index + word_len - 1 < text_len)
     {
         char comparison_char = *(text + text_index + word_len - 1);
         int  cmp_res;
@@ -234,17 +237,16 @@ bool findMatch(char *text, const char *word, struct LookupChar *lookup_table, in
         
         if (cmp_res == 0)
         {
-            match = true;
-            *start_index = text_index;
-            *end_index   = text_index + word_len - 1;
+            ++(*start_end_pairs_size);
+            start_end_pairs = (struct StartEndPair *) realloc(start_end_pairs, sizeof(struct StartEndPair) * *start_end_pairs_size);
+            (start_end_pairs + *start_end_pairs_size - 1)->start = text_index;
+            (start_end_pairs + *start_end_pairs_size - 1)->end = text_index + word_len - 1;
         } else
         {
             shift = getShift(comparison_char, lookup_table, lookup_table_size);
             text_index += shift;
         }
     }
-    
-    return match;
 }
 
 int getShift(char c, struct LookupChar *lookup_table, int lookup_table_size)
@@ -254,9 +256,9 @@ int getShift(char c, struct LookupChar *lookup_table, int lookup_table_size)
     shift = 1;
     for (int i = 0, match = 0; !match && i < lookup_table_size; ++i)
     {
-        if (c == (*(lookup_table + i)).c)
+        if (c == (lookup_table + i)->c)
         {
-            shift = (*(lookup_table + i)).shift;
+            shift = (lookup_table + i)->shift;
             match = 1;
         }
     }
