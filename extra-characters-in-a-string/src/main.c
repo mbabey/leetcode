@@ -6,6 +6,12 @@
 #define ALPHABET_LEN 26
 #define ALPHA_ASCII_MOD 'a' // 97
 
+#define IS_COLLISION(start1, end1, start2, end2) \
+    ((start1 <= start2 && start2 <= end1) || (start1 <= end2 && end2 <= end1) \
+    || (start2 <= start1 && start1 <= end2) || (start2 <= end1 && end1 <= end2))
+
+#define MIN(a, b) (a < b) ? (a) : (b)
+
 struct LookupChar
 {
     char c;
@@ -29,13 +35,15 @@ void setLookupTable(const char *word, struct LookupChar *lookup_table, int looku
 int setShift(char c, const char *word);
 
 void findMatches(char *text, const char *word, struct LookupChar *lookup_table, int lookup_table_size,
-                 struct StartEndPair *start_end_pairs, int *start_end_pairs_size);
+                 struct StartEndPair **start_end_pairs, int *start_end_pairs_size);
 
 int getShift(char c, struct LookupChar *lookup_table, int lookup_table_size);
 
-void clearChars(char *text, int start_index, int end_index);
+int determineOptimalSolution(struct StartEndPair *start_end_pairs, int start_end_pairs_size, int text_len);
 
-int countRemainingChars(const char *text);
+int compareStartEndPair(const void *sep1, const void *sep2);
+
+int findMinChars(int index, struct StartEndPair *start_end_pairs, int start_end_pairs_size, int remaining_chars);
 
 int main(void)
 {
@@ -95,13 +103,13 @@ int minExtraChar(char *s, char **dictionary, int dictionarySize)
     {
         setLookupTable(*(dictionary + dict_i), alphabet, alphabet_size);
         findMatches(s, *(dictionary + dict_i), alphabet, alphabet_size,
-                    start_end_pairs, &start_end_pairs_size);
+                    &start_end_pairs, &start_end_pairs_size);
     }
     
-    
+    remaining_chars = determineOptimalSolution(start_end_pairs, start_end_pairs_size, 0);
     
     free(alphabet);
-    remaining_chars = countRemainingChars(s);
+    free(start_end_pairs);
     
     return remaining_chars;
 }
@@ -119,7 +127,7 @@ struct LookupChar *getAlphabet(const char *text, int *alphabet_size)
     }
     
     // Allocate memory for the alphabet and fill in the letters.
-    alphabet = (struct LookupChar *) malloc(sizeof(struct LookupChar) * (*alphabet_size + 1));
+    alphabet = (struct LookupChar *) malloc(sizeof(struct LookupChar) * *alphabet_size);
     if (!alphabet)
     {
         free(identifier);
@@ -136,12 +144,6 @@ struct LookupChar *getAlphabet(const char *text, int *alphabet_size)
             ++a;
         }
     }
-    
-    // TODO: may not be necessary if method of counting chars is changed.
-    // Add the ' ' character to the alphabet and increase the alphabet size by one.
-    (alphabet + *alphabet_size)->c     = ' ';
-    (alphabet + *alphabet_size)->shift = 0;
-    ++(*alphabet_size);
     
     free(identifier);
     
@@ -211,7 +213,7 @@ int setShift(char c, const char *word)
 }
 
 void findMatches(char *text, const char *word, struct LookupChar *lookup_table, int lookup_table_size,
-                 struct StartEndPair *start_end_pairs, int *start_end_pairs_size)
+                 struct StartEndPair **start_end_pairs, int *start_end_pairs_size)
 {
     int text_len;
     int word_len;
@@ -238,14 +240,14 @@ void findMatches(char *text, const char *word, struct LookupChar *lookup_table, 
         if (cmp_res == 0)
         {
             ++(*start_end_pairs_size);
-            start_end_pairs = (struct StartEndPair *) realloc(start_end_pairs, sizeof(struct StartEndPair) * *start_end_pairs_size);
-            (start_end_pairs + *start_end_pairs_size - 1)->start = text_index;
-            (start_end_pairs + *start_end_pairs_size - 1)->end = text_index + word_len - 1;
-        } else
-        {
-            shift = getShift(comparison_char, lookup_table, lookup_table_size);
-            text_index += shift;
+            *start_end_pairs = (struct StartEndPair *) realloc(*start_end_pairs,
+                                                               sizeof(struct StartEndPair) * *start_end_pairs_size);
+            (*start_end_pairs + *start_end_pairs_size - 1)->start = text_index;
+            (*start_end_pairs + *start_end_pairs_size - 1)->end   = text_index + word_len - 1;
         }
+        
+        shift = getShift(comparison_char, lookup_table, lookup_table_size);
+        text_index += shift;
     }
 }
 
@@ -266,29 +268,42 @@ int getShift(char c, struct LookupChar *lookup_table, int lookup_table_size)
     return shift;
 }
 
-void clearChars(char *text, int start_index, int end_index)
+int determineOptimalSolution(struct StartEndPair *start_end_pairs, int start_end_pairs_size, int text_len)
 {
-    for (int i = start_index; i <= end_index; ++i)
-    {
-        *(text + i) = ' ';
-    }
+    // Find the combination of start and end pairs that minimizes the number of unused characters.
+    int min_chars;
+    
+    qsort(start_end_pairs, start_end_pairs_size, sizeof(struct StartEndPair), compareStartEndPair);
+    
+    min_chars = findMinChars(0, start_end_pairs, start_end_pairs_size, text_len);
+    
+    return min_chars;
 }
 
-int countRemainingChars(const char *text)
+int compareStartEndPair(const void *sep1, const void *sep2)
 {
-    int remaining_chars;
-    int text_len;
-    
-    text_len = (int) strlen(text);
-    
-    remaining_chars = 0;
-    for (int i = 0; i < text_len; ++i)
+    return ((const struct StartEndPair *) sep1)->start - ((const struct StartEndPair *) sep2)->start;
+}
+
+int findMinChars(int index, struct StartEndPair *start_end_pairs, int start_end_pairs_size, int remaining_chars)
+{
+    if (index >= start_end_pairs_size)
     {
-        if (*(text + i) != ' ')
-        {
-            ++remaining_chars;
-        }
+        return remaining_chars;
     }
+    
+    if (index > 0 && IS_COLLISION((start_end_pairs + index - 1)->start, (start_end_pairs + index - 1)->end,
+                                  (start_end_pairs + index)->start, (start_end_pairs + index)->end))
+    {
+    
+    } else
+    {
+        // Reduce the remaining chars count by the size of the non-colliding substring
+        remaining_chars -= (start_end_pairs + index)->end - (start_end_pairs + index)->start + 1;
+    }
+    
+    int res = findMinChars(index + 1, start_end_pairs, start_end_pairs_size, remaining_chars);
+    remaining_chars = MIN(remaining_chars, res);
     
     return remaining_chars;
 }
