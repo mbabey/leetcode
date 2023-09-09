@@ -126,9 +126,9 @@ int main(void)
             {'.', '.', '.', '.', '3', '.', '.', '8', '6'}};
     
     
-    int boardSize = BOARD_SIZE;
-    char **board = (char **) malloc(sizeof(char *) * BOARD_SIZE);
-    for (int i = 0; i < boardSize; ++i)
+    int      boardSize = BOARD_SIZE;
+    char     **board   = (char **) malloc(sizeof(char *) * BOARD_SIZE);
+    for (int i         = 0; i < boardSize; ++i)
     {
         *(board + i) = (char *) malloc(boardSize);
         memcpy(*(board + i), board_static[i], boardSize);
@@ -177,13 +177,14 @@ void get_values_for_block(char **values, char **board, int block_num)
     int row_bound;
     
     val_index = 0;
-    col_bound = ((block_num % 3) + 1) * 3;
     row_bound = ((block_num / 3) + 1) * 3;
-    for (int col = col_bound - 3; col < col_bound; ++col)
+    col_bound = ((block_num % 3) + 1) * 3;
+    for (int row = row_bound - 3; row < row_bound; ++row)
     {
-        for (int row = row_bound - 3; row < row_bound; ++row)
+        for (int col = col_bound - 3; col < col_bound; ++col)
         {
             *(*values + val_index) = *(*(board + row) + col);
+            ++val_index;
         }
     }
 }
