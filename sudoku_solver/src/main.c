@@ -104,8 +104,13 @@ int main(void)
 
 void solveSudoku(char **board, int boardSize, int *boardColSize)
 {
+    struct board *board_d;
+    
     // 1: Set up the data structures.
-    create_board(board, boardSize);
+    board_d = create_board(board, boardSize);
+    
+    // Free memory.
+    free_board(board_d);
 }
 
 struct board *create_board(char **board, int boardSize)
@@ -124,14 +129,21 @@ struct block *create_block(const char *values, int boardSize)
 {
     struct block* block;
     bool given;
+    bool prefilled;
     
     block = (struct block *) malloc(sizeof(struct block));
     
+    prefilled = true;
     for (int cell_num = 0; cell_num < boardSize; ++cell_num)
     {
         given = (*(values + cell_num) == '.') ? false : true;
         *(block->subgrid + cell_num) = create_node(*(values + cell_num), given, NULL);
+        if (prefilled && !given)
+        {
+            prefilled = false;
+        }
     }
+    block->filled = prefilled;
 }
 
 node_t *create_node(char value, bool set, node_t *next)
@@ -144,4 +156,29 @@ node_t *create_node(char value, bool set, node_t *next)
     node->next = next;
     
     return node;
+}
+
+void free_board(struct board *board)
+{
+    for (int i = 0; i < BOARD_SIZE; ++i) {
+        free_block((board->grid + i));
+    }
+}
+
+void free_block(struct block *block)
+{
+    for (int i = 0; i < BOARD_SIZE; ++i) {
+        free_list(*(block->subgrid + i));
+    }
+}
+
+void free_list(node_t *head)
+{
+    if (head == NULL)
+    {
+        return;
+    }
+    
+    free_list(head->next);
+    free(head);
 }
