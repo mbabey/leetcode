@@ -41,7 +41,7 @@ struct block {
  * A 9*9 grid of struct blocks.
  */
 struct board {
-    struct block grid[BOARD_SIZE];
+    struct block *grid[BOARD_SIZE];
 };
 
 /**
@@ -96,6 +96,8 @@ void free_block(struct block *block);
 void free_list(node_t *head);
 
 
+void get_values_for_block(char **values, char **board, int block_num);
+
 int main(void)
 {
     
@@ -116,12 +118,38 @@ void solveSudoku(char **board, int boardSize, int *boardColSize)
 struct board *create_board(char **board, int boardSize)
 {
     struct board* board_d;
+    char *values;
     
+    values = (char *) malloc(boardSize);
     board_d = (struct board*) malloc(sizeof(struct board));
     
     for (int block_num = 0; block_num < boardSize; ++block_num)
     {
-        (board_d->grid + block_num) = create_block();
+        get_values_for_block(&values, board, block_num);
+    
+        *(board_d->grid + block_num) = create_block(values, boardSize);
+    }
+    
+    free(values);
+    
+    return board_d;
+}
+
+void get_values_for_block(char **values, char **board, int block_num)
+{
+    int  val_index;
+    int  col_bound;
+    int  row_bound;
+    
+    val_index = 0;
+    col_bound = ((block_num % 3) + 1) * 3;
+    row_bound = ((block_num / 3) + 1) * 3;
+    for (int col = col_bound - 3; col < col_bound; ++col)
+    {
+        for (int row = row_bound - 3; row < row_bound; ++row)
+        {
+            *(*values + val_index) = *(*(board + row) + col);
+        }
     }
 }
 
