@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 /**
  * Dimension of the grid.
  */
-#define GRID_SIZE 9
+#define BOARD_SIZE 9
 
 /**
  * Bounds for the rows.
@@ -32,7 +33,7 @@ typedef struct node {
  * in the block.
  */
 struct block {
-    node_t *subgrid[GRID_SIZE];
+    node_t *subgrid[BOARD_SIZE];
     bool filled;
 };
 
@@ -40,7 +41,7 @@ struct block {
  * A 9*9 grid of struct blocks.
  */
 struct board {
-    struct block grid[GRID_SIZE];
+    struct block grid[BOARD_SIZE];
 };
 
 /**
@@ -50,6 +51,22 @@ struct board {
  * @param boardColSize the size of the columns in the board to solve
  */
 void solveSudoku(char **board, int boardSize, int *boardColSize);
+
+/**
+ * Transform the input 2D array into a board data structure.
+ * @param board the 2D array
+ * @param boardSize the size of the board array
+ * @return a board data structure
+ */
+struct board *create_board(char **board, int boardSize);
+
+/**
+ * Create a block containing the values passed.
+ * @param values an array of characters to be stored in the block
+ * @param boardSize the size of the block
+ * @return a block data structure
+ */
+struct block *create_block(const char *values, int boardSize);
 
 /**
  * Allocate a new node_t with a value, a set status, and a next node_t.
@@ -88,6 +105,33 @@ int main(void)
 void solveSudoku(char **board, int boardSize, int *boardColSize)
 {
     // 1: Set up the data structures.
+    create_board(board, boardSize);
+}
+
+struct board *create_board(char **board, int boardSize)
+{
+    struct board* board_d;
+    
+    board_d = (struct board*) malloc(sizeof(struct board));
+    
+    for (int block_num = 0; block_num < boardSize; ++block_num)
+    {
+        (board_d->grid + block_num) = create_block();
+    }
+}
+
+struct block *create_block(const char *values, int boardSize)
+{
+    struct block* block;
+    bool given;
+    
+    block = (struct block *) malloc(sizeof(struct block));
+    
+    for (int cell_num = 0; cell_num < boardSize; ++cell_num)
+    {
+        given = (*(values + cell_num) == '.') ? false : true;
+        *(block->subgrid + cell_num) = create_node(*(values + cell_num), given, NULL);
+    }
 }
 
 node_t *create_node(char value, bool set, node_t *next)
