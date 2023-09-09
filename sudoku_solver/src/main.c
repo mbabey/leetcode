@@ -92,6 +92,14 @@ struct block *create_block(const char *values, int boardSize);
 node_t *create_node(char value, bool set, node_t *next);
 
 /**
+ * Solve the sudoku puzzle.
+ * @param board the board on which to solve
+ * @param original_board the original board in which to store the solution
+ * @param board_size the size of the board
+ */
+void solve(struct board *board, char ***original_board, int board_size);
+
+/**
  * Free the memory for a struct board.
  * @param board the struct board to free
  */
@@ -146,7 +154,10 @@ void solveSudoku(char **board, int boardSize, int *boardColSize)
     // 1: Set up the data structures.
     board_d = create_board(board, boardSize);
     
-    // Free memory.
+    // 2: Get the solution.
+    solve(board_d, &board, boardSize);
+    
+    // 3: Free memory.
     free_board(board_d);
 }
 
@@ -222,6 +233,11 @@ node_t *create_node(char value, bool set, node_t *next)
     node->next  = next;
     
     return node;
+}
+
+void solve(struct board *board, char ***original_board, int board_size)
+{
+
 }
 
 void free_board(struct board *board)
