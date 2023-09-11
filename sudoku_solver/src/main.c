@@ -79,6 +79,7 @@ int main(void)
 void solveSudoku(char **board, int boardSize, int *boardColSize)
 {
     solve(board, 0, 0, board, boardSize);
+    return;
 }
 
 char **solve(char **board, int row, int col, char **dst_board, int boardSize)
@@ -120,7 +121,7 @@ int reject(char **board, int row, int col, int boardSize)
     for (int i = 0; i < boardSize; ++i)
     {
         // Check the row for the same number. Check the col for the same number.
-        if (c == *(*(board + row) + i) || c == *(*(board + i) + col))
+        if (!(i == row && i == col) && (c == *(*(board + row) + i) || c == *(*(board + i) + col)))
         {
             return 1;
         }
@@ -165,7 +166,7 @@ int first(char t_board[9][9], int *col, int *row, char **board, int boardSize)
     }
     
     // the first appropriate values are those which correspond to the topmost leftmost '.' character.
-    char c = *(*(board + *row) + *col);
+    char c = *(*(t_board + *row) + *col);
     while (*row < boardSize && c != '.')
     {
         ++(*col);
@@ -176,7 +177,7 @@ int first(char t_board[9][9], int *col, int *row, char **board, int boardSize)
         }
         if (*row < boardSize)
         {
-            c = *(*(board + *row) + *col);
+            c = *(*(t_board + *row) + *col);
         }
     }
     
@@ -187,7 +188,7 @@ int first(char t_board[9][9], int *col, int *row, char **board, int boardSize)
         ret_val = 0;
     } else
     {
-        *(*(board + *row) + *col) = '1';
+        *(*(t_board + *row) + *col) = '1';
         ret_val = 1;
     }
     
