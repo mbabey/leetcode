@@ -19,9 +19,9 @@
 #define BOARD_SIZE 9
 
 /**
- * Maximum value for a cell
+ * Modifier to turn ASCII digit to integer.
  */
-#define MAX 9
+#define ASCII_MOD '0'
 
 /**
  * Solve a sudoku puzzle.
@@ -45,7 +45,7 @@ int accept(char **board, int boardSize);
 
 int first(char t_board[9][9], int *col, int *row, char **board, int boardSize);
 
-int next(char board[9][9], int *row, int *col, int boardSize);
+int next(char board[9][9], int row, int col, int boardSize);
 
 char **store_solution(char **board, char **dst_board, int boardSize);
 
@@ -85,21 +85,7 @@ int main(void)
 
 void solveSudoku(char **board, int boardSize, int *boardColSize)
 {
-    // Solution 2: using backtracking with original grid
-    
-    
-    
-    // Solution 1: Using struct and separating into subgrids
-//    struct board *board_d;
-//
-//    // 1: Set up the data structures.
-//    board_d = create_board(board, boardSize);
-//
-//    // 2: Get the solution.
-//    solve(board_d, &board, boardSize);
-//
-//    // 3: Free memory.
-//    free_board(board_d);
+
 }
 
 int reject(char **board, int row, int col, int boardSize)
@@ -161,12 +147,30 @@ int first(char t_board[9][9], int *col, int *row, char **board, int boardSize)
         }
     }
     
-    return (*row == boardSize) ? 0 : 1;
+    int ret_val;
+    
+    if (*row == boardSize)
+    {
+        ret_val = 0;
+    } else
+    {
+        *(*(board + *row) + *col) = '1';
+        ret_val = 1;
+    }
+    
+    return ret_val;
 }
 
-int next(char board[9][9], int *row, int *col, int boardSize)
+int next(char board[9][9], int row, int col, int boardSize)
 {
-
+    if (*(*(board + row) + col) + (char) 1 > '9')
+    {
+        return 0;
+    } else
+    {
+        ++(*(*(board + row) + col));
+        return 1;
+    }
 }
 
 char **solve(char **board, int row, int col, char **dst_board, int boardSize)
@@ -194,13 +198,17 @@ char **solve(char **board, int row, int col, char **dst_board, int boardSize)
         {
             return dst_board;
         }
-        cont = next(t_board, &t_row, &t_col, boardSize);
+        cont = next(t_board, t_row, t_col, boardSize);
     }
     return NULL;
 }
 
 char **store_solution(char **board, char **dst_board, int boardSize)
 {
+    for (int i = 0; i < boardSize; ++i)
+    {
+        memcpy(*(dst_board + i), *(board + i), boardSize);
+    }
     
     return dst_board;
 }
