@@ -19,11 +19,6 @@
 #define BOARD_SIZE 9
 
 /**
- * Modifier to turn ASCII digit to integer.
- */
-#define ASCII_MOD '0'
-
-/**
  * Solve a sudoku puzzle.
  * @param board the board to solve
  * @param boardSize the size of the board to solve
@@ -43,11 +38,17 @@ int reject(char **board, int row, int col, int boardSize);
 
 int accept(char **board, int boardSize);
 
-int first(char t_board[9][9], int *col, int *row, char **board, int boardSize);
-
-int next(char board[9][9], int row, int col, int boardSize);
-
 char **store_solution(char **board, char **dst_board, int boardSize);
+
+char **make_board(int boardSize);
+
+int first(char **t_board, int *col, int *row, char **board, int boardSize);
+
+void free_board(char **board, int boardSize);
+
+int next(char **board, int row, int col, int boardSize);
+
+void print_board(char **board, int boardSize);
 
 int main(void)
 {
@@ -73,13 +74,26 @@ int main(void)
     
     solveSudoku(board, boardSize, &boardSize);
     
+    print_board(board, boardSize);
+    
     return 0;
+}
+
+void print_board(char **board, int boardSize)
+{
+    for (int r = 0; r < boardSize; ++r)
+    {
+        for (int c = 0; c < boardSize; ++c)
+        {
+            (void) printf(" %c ", *(*(board + r) + c));
+        }
+        (void) printf("\n");
+    }
 }
 
 void solveSudoku(char **board, int boardSize, int *boardColSize)
 {
     solve(board, 0, 0, board, boardSize);
-    return;
 }
 
 char **solve(char **board, int row, int col, char **dst_board, int boardSize)
@@ -95,20 +109,26 @@ char **solve(char **board, int row, int col, char **dst_board, int boardSize)
     int  cont;
     int  t_row;
     int  t_col;
-    char t_board[BOARD_SIZE][BOARD_SIZE];
+    char **t_board;
+    char **res;
     
-    t_row = row; // Start where it left off.
-    t_col = col;
+    t_row   = row; // Start where it left off.
+    t_col   = col;
+    t_board = make_board(boardSize);
     
     cont = first(t_board, &t_col, &t_row, board, boardSize);
     while (cont)
     {
-        if (solve((char **) t_board, t_row, t_col, dst_board, boardSize))
+        res = solve(t_board, t_row, t_col, dst_board, boardSize);
+        if (res)
         {
+            free_board(t_board, boardSize);
             return dst_board;
         }
         cont = next(t_board, t_row, t_col, boardSize);
     }
+    
+    free_board(t_board, boardSize);
     return NULL;
 }
 
@@ -118,14 +138,25 @@ int reject(char **board, int row, int col, int boardSize)
     
     c = *(*(board + row) + col);
     
+    // Check the col for the same number.
     for (int i = 0; i < boardSize; ++i)
     {
-        // Check the row for the same number. Check the col for the same number.
-        if (!(i == row && i == col) && (c == *(*(board + row) + i) || c == *(*(board + i) + col)))
+        if (i != row && c == *(*(board + i) + col))
         {
             return 1;
         }
     }
+    
+    // Check the row for the same number.
+    for (int i = 0; i < boardSize; ++i)
+    {
+        if (i != col && c == *(*(board + row) + i))
+        {
+            return 1;
+        }
+    }
+    
+    // Check the block for the same number.
     
     return 0;
 }
@@ -157,7 +188,17 @@ char **store_solution(char **board, char **dst_board, int boardSize)
     return dst_board;
 }
 
-int first(char t_board[9][9], int *col, int *row, char **board, int boardSize)
+char **make_board(int boardSize)
+{
+    char     **board = (char **) malloc(sizeof(char *) * boardSize);
+    for (int i       = 0; i < boardSize; ++i)
+    {
+        *(board + i) = (char *) malloc(boardSize);
+    }
+    return board;
+}
+
+int first(char **t_board, int *col, int *row, char **board, int boardSize)
 {
     // Put the board into the t_board, set row and col to the first appropriate values.
     for (int i = 0; i < boardSize; ++i)
@@ -195,7 +236,16 @@ int first(char t_board[9][9], int *col, int *row, char **board, int boardSize)
     return ret_val;
 }
 
-int next(char board[9][9], int row, int col, int boardSize)
+void free_board(char **board, int boardSize)
+{
+    for (int i = 0; i < boardSize; ++i)
+    {
+        free(*(board + i));
+    }
+    free(board);
+}
+
+int next(char **board, int row, int col, int boardSize)
 {
     if (*(*(board + row) + col) + (char) 1 > '9')
     {
