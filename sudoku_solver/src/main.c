@@ -72,20 +72,43 @@ int main(void)
     }
     
     solveSudoku(board, boardSize, &boardSize);
-
-//    int arr[]    = {0, 1, 2, 3};
-//    int arr_size = 4;
-//    int iter     = 0;
-//    int *ans;
-//
-//    ans = test_function(arr, NULL, arr_size, &iter);
     
     return 0;
 }
 
 void solveSudoku(char **board, int boardSize, int *boardColSize)
 {
+    solve(board, 0, 0, board, boardSize);
+}
 
+char **solve(char **board, int row, int col, char **dst_board, int boardSize)
+{
+    if (reject(board, row, col, boardSize))
+    {
+        return NULL;
+    } else if (accept(board, boardSize))
+    {
+        return store_solution(board, dst_board, boardSize);
+    }
+    
+    int  cont;
+    int  t_row;
+    int  t_col;
+    char t_board[BOARD_SIZE][BOARD_SIZE];
+    
+    t_row = row; // Start where it left off.
+    t_col = col;
+    
+    cont = first(t_board, &t_col, &t_row, board, boardSize);
+    while (cont)
+    {
+        if (solve((char **) t_board, t_row, t_col, dst_board, boardSize))
+        {
+            return dst_board;
+        }
+        cont = next(t_board, t_row, t_col, boardSize);
+    }
+    return NULL;
 }
 
 int reject(char **board, int row, int col, int boardSize)
@@ -121,6 +144,16 @@ int accept(char **board, int boardSize)
     }
     
     return 1;
+}
+
+char **store_solution(char **board, char **dst_board, int boardSize)
+{
+    for (int i = 0; i < boardSize; ++i)
+    {
+        memcpy(*(dst_board + i), *(board + i), boardSize);
+    }
+    
+    return dst_board;
 }
 
 int first(char t_board[9][9], int *col, int *row, char **board, int boardSize)
@@ -171,44 +204,4 @@ int next(char board[9][9], int row, int col, int boardSize)
         ++(*(*(board + row) + col));
         return 1;
     }
-}
-
-char **solve(char **board, int row, int col, char **dst_board, int boardSize)
-{
-    if (reject(board, row, col, boardSize))
-    {
-        return NULL;
-    } else if (accept(board, boardSize))
-    {
-        return store_solution(board, dst_board, boardSize);
-    }
-    
-    int  cont;
-    int  t_row;
-    int  t_col;
-    char t_board[BOARD_SIZE][BOARD_SIZE];
-    
-    t_row = row; // Start where it left off.
-    t_col = col;
-    
-    cont = first(t_board, &t_col, &t_row, board, boardSize);
-    while (cont)
-    {
-        if (solve((char **) t_board, t_row, t_col, dst_board, boardSize))
-        {
-            return dst_board;
-        }
-        cont = next(t_board, t_row, t_col, boardSize);
-    }
-    return NULL;
-}
-
-char **store_solution(char **board, char **dst_board, int boardSize)
-{
-    for (int i = 0; i < boardSize; ++i)
-    {
-        memcpy(*(dst_board + i), *(board + i), boardSize);
-    }
-    
-    return dst_board;
 }
