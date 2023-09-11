@@ -13,50 +13,15 @@
 //    {{".", ".", ".", "8", ".", ".", ".", ".", "9"},{'.', '8', '7', '3', '.', '.', '.', '4', '.'},{'6', '.', '.', '7', '.', '.', '.', '.', '.'},{'.', '.', '8', '5', '.', '.', '9', '7', '.'},{'.', '.', '.', '.', '.', '.', '.', '.', '.'},{'.', '4', '3', '.', '.', '7', '5', '.', '.'},{'.', '.', '.', '.', '.', '3', '.', '.', '.'},{'.', '3', '.', '.', '.', '1', '4', '5', '.'},{'4', '.', '.', '.', '.', '2', '.', '.', '1'}}
 //    {{".", "4", ".", "5", ".", ".", ".", ".", "."},{'8', '.', '.', '.', '9', '.', '.', '3', '.'},{'.', '7', '6', '.', '2', '.', '.', '.', '.'},{'.', '1', '4', '6', '.', '.', '.', '.', '.'},{'.', '.', '.', '.', '.', '9', '.', '.', '7'},{'.', '.', '.', '.', '.', '3', '6', '.', '.'},{'.', '.', '1', '.', '.', '4', '.', '5', '.'},{'.', '6', '.', '.', '.', '.', '.', '.', '3'},{'.', '.', '7', '1', '.', '.', '2', '.', '.'}}
 
-
 /**
  * Dimension of the grid.
  */
 #define BOARD_SIZE 9
 
 /**
- * Bounds for the rows.
+ * Maximum value for a cell
  */
-#define TOP_ROW_LOWER 0
-#define TOP_ROW_UPPER 2
-#define MID_ROW_LOWER 3
-#define MID_ROW_UPPER 5
-#define BOT_ROW_LOWER 6
-#define BOT_ROW_UPPER 8
-
-/**
- * A single cell in the grid. Contains a value, whether the cell is set (i.e. locked in), and a pointer to
- * the next potential value for the cell. If set is true, then next must be NULL.
- */
-typedef struct node
-{
-    char        value;
-    bool set;
-    struct node *next;
-} node_t;
-
-/**
- * A 9*9 grid of linked lists. Each linked list contains potential solutions for each cell
- * in the block.
- */
-struct block
-{
-    node_t *subgrid[BOARD_SIZE];
-    bool filled;
-};
-
-/**
- * A 9*9 grid of struct blocks.
- */
-struct board
-{
-    struct block *grid[BOARD_SIZE];
-};
+#define MAX 9
 
 /**
  * Solve a sudoku puzzle.
@@ -67,58 +32,22 @@ struct board
 void solveSudoku(char **board, int boardSize, int *boardColSize);
 
 /**
- * Transform the input 2D array into a board data structure.
- * @param board the 2D array
- * @param boardSize the size of the board array
- * @return a board data structure
- */
-struct board *create_board(char **board, int boardSize);
-
-/**
- * Create a block containing the values passed.
- * @param values an array of characters to be stored in the block
- * @param boardSize the size of the block
- * @return a block data structure
- */
-struct block *create_block(const char *values, int boardSize);
-
-/**
- * Allocate a new node_t with a value, a set status, and a next node_t.
- * @param value the value the node_t will hold. Can be a number 0-9 or "."
- * @param set the set status of the node_t
- * @param next the next node_t
- * @return the new node_t
- */
-node_t *create_node(char value, bool set, node_t *next);
-
-/**
  * Solve the sudoku puzzle.
  * @param board the board on which to solve
- * @param original_board the original board in which to store the solution
- * @param board_size the size of the board
+ * @param dst_board the original board in which to store the solution
+ * @param boardSize the size of the board
  */
-void solve(struct board *board, char ***original_board, int board_size);
+char **solve(char **board, char **dst_board, int boardSize);
 
-/**
- * Free the memory for a struct board.
- * @param board the struct board to free
- */
-void free_board(struct board *board);
+int reject(char **board, int boardSize);
 
-/**
- * Free the memory for a struct block.
- * @param block the struct block to free
- */
-void free_block(struct block *block);
+int accept(char **board, int boardSize);
 
-/**
- * Free a linked list of node_ts.
- * @param head the head of the node_t list
- */
-void free_list(node_t *head);
+int first(char t_board[9][9], char **board, int boardSize);
 
+int next(char board[9][9], int boardSize);
 
-void get_values_for_block(char **values, char **board, int block_num);
+char ** store_solution(char **board, char **dst_board, int boardSize);
 
 int main(void)
 {
@@ -135,7 +64,7 @@ int main(void)
     
     
     int      boardSize = BOARD_SIZE;
-    char     **board   = (char **) malloc(sizeof(char *) * BOARD_SIZE);
+    char     **board   = (char **) malloc(sizeof(char *) * boardSize);
     for (int i         = 0; i < boardSize; ++i)
     {
         *(board + i) = (char *) malloc(boardSize);
@@ -143,126 +72,82 @@ int main(void)
     }
     
     solveSudoku(board, boardSize, &boardSize);
+
+//    int arr[]    = {0, 1, 2, 3};
+//    int arr_size = 4;
+//    int iter     = 0;
+//    int *ans;
+//
+//    ans = test_function(arr, NULL, arr_size, &iter);
     
     return 0;
 }
 
 void solveSudoku(char **board, int boardSize, int *boardColSize)
 {
-    struct board *board_d;
+    // Solution 2: using backtracking with original grid
     
-    // 1: Set up the data structures.
-    board_d = create_board(board, boardSize);
     
-    // 2: Get the solution.
-    solve(board_d, &board, boardSize);
     
-    // 3: Free memory.
-    free_board(board_d);
+    // Solution 1: Using struct and separating into subgrids
+//    struct board *board_d;
+//
+//    // 1: Set up the data structures.
+//    board_d = create_board(board, boardSize);
+//
+//    // 2: Get the solution.
+//    solve(board_d, &board, boardSize);
+//
+//    // 3: Free memory.
+//    free_board(board_d);
 }
 
-struct board *create_board(char **board, int boardSize)
+int reject(char **board, int boardSize)
 {
-    struct board *board_d;
-    char         *values;
-    
-    values  = (char *) malloc(boardSize);
-    board_d = (struct board *) malloc(sizeof(struct board));
-    
-    for (int block_num = 0; block_num < boardSize; ++block_num)
+
+}
+
+int accept(char **board, int boardSize)
+{
+
+}
+
+int first(char t_board[BOARD_SIZE][BOARD_SIZE], char **board, int boardSize)
+{
+
+}
+
+int next(char board[BOARD_SIZE][BOARD_SIZE], int boardSize)
+{
+
+}
+
+char **solve(char **board, char **dst_board, int boardSize)
+{
+    if (reject(board, boardSize))
     {
-        get_values_for_block(&values, board, block_num);
-        
-        *(board_d->grid + block_num) = create_block(values, boardSize);
+        return NULL;
+    } else if (accept(board, boardSize))
+    {
+        return store_solution(board, dst_board, boardSize);
     }
     
-    free(values);
-    
-    return board_d;
-}
-
-void get_values_for_block(char **values, char **board, int block_num)
-{
-    int val_index;
-    int col_bound;
-    int row_bound;
-    
-    val_index = 0;
-    row_bound = ((block_num / 3) + 1) * 3;
-    col_bound = ((block_num % 3) + 1) * 3;
-    for (int row = row_bound - 3; row < row_bound; ++row)
+    int cont;
+    char t_board[BOARD_SIZE][BOARD_SIZE];
+    cont = first(t_board, board, boardSize);
+    while (cont)
     {
-        for (int col = col_bound - 3; col < col_bound; ++col)
+        if (solve((char **) t_board, dst_board, boardSize))
         {
-            *(*values + val_index) = *(*(board + row) + col);
-            ++val_index;
+            return dst_board;
         }
+        cont = next(t_board, boardSize);
     }
+    return NULL;
 }
 
-struct block *create_block(const char *values, int boardSize)
+char ** store_solution(char **board, char **dst_board, int boardSize)
 {
-    struct block *block;
-    bool         given;
-    bool         prefilled;
     
-    block = (struct block *) malloc(sizeof(struct block));
-    
-    prefilled = true;
-    for (int cell_num = 0; cell_num < boardSize; ++cell_num)
-    {
-        given = (*(values + cell_num) == '.') ? false : true;
-        *(block->subgrid + cell_num) = create_node(*(values + cell_num), given, NULL);
-        if (prefilled && !given)
-        {
-            prefilled = false;
-        }
-    }
-    block->filled = prefilled;
-    
-    return block;
-}
-
-node_t *create_node(char value, bool set, node_t *next)
-{
-    node_t *node;
-    
-    node = (node_t *) malloc(sizeof(node_t));
-    node->value = value;
-    node->set   = set;
-    node->next  = next;
-    
-    return node;
-}
-
-void solve(struct board *board, char ***original_board, int board_size)
-{
-
-}
-
-void free_board(struct board *board)
-{
-    for (int i = 0; i < BOARD_SIZE; ++i)
-    {
-        free_block(*(board->grid + i));
-    }
-}
-
-void free_block(struct block *block)
-{
-    for (int i = 0; i < BOARD_SIZE; ++i)
-    {
-        free_list(*(block->subgrid + i));
-    }
-}
-
-void free_list(node_t *head)
-{
-    if (head == NULL)
-    {
-        return;
-    }
-    
-    free_list(head->next);
-    free(head);
+    return dst_board;
 }
