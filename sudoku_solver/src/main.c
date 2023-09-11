@@ -27,29 +27,97 @@
 void solveSudoku(char **board, int boardSize, int *boardColSize);
 
 /**
- * Solve the sudoku puzzle.
+ * Solve the sudoku puzzle by backtracking. Each branch in the solution space will be explored until rejected.
+ * Stop exploring the solution space when a solution is accepted.
  * @param board the board on which to solve
+ * @param row the row on which to start searching for the the solution
+ * @param col the col on which to start searching for the the solution
  * @param dst_board the original board in which to store the solution
  * @param boardSize the size of the board
+ * @return the solution
  */
 char **solve(char **board, int row, int col, char **dst_board, int boardSize);
 
+/**
+ * Determine whether a potential solution should be rejected. A solution is rejected when it is invalid by the rules of
+ * Sudoku.
+ * @param board the board on which the potential solution exists
+ * @param row the row number of the most recently changed solution piece
+ * @param col the col number of the most recently changed solution piece
+ * @param boardSize the size of the board
+ * @return 1 if rejected, 0 otherwise
+ */
 int reject(char **board, int row, int col, int boardSize);
 
-int check_block(char check, char **board, int row, int col, int boardSize);
+/**
+ * Check a block (3*3 subgrid) for a character 'check'
+ * @param check the character for which to be checked
+ * @param board the board on which to check
+ * @param row the row number of the character being checked
+ * @param col the col number of the character being checked
+ * @return 1 if the character already exists in the block, 0 otherwise
+ */
+int check_block(char check, char **board, int row, int col);
 
+/**
+ * Determine whether a solution is complete. A complete solution will be valid because the only solution that can be
+ * completed is a valid one. All other solutions are rejected before completion.
+ * @param board the board to check
+ * @param boardSize the size of the board
+ * @return 1 if the solution is valid, 0 otherwise
+ */
 int accept(char **board, int boardSize);
 
+/**
+ * Store a solution in board in the memory pointed to by dst_board.
+ * @param board the board to store
+ * @param dst_board the location to store the solution
+ * @param boardSize the size of the board
+ * @return the location the solution was stored
+ */
 char **store_solution(char **board, char **dst_board, int boardSize);
 
+/**
+ * Allocate memory for a boardSize * boardSize char array.
+ * @param boardSize the dimension of the array
+ * @return the allocated array.
+ */
 char **make_board(int boardSize);
 
-int first(char **t_board, int *col, int *row, char **board, int boardSize);
+/**
+ * Get the first possible solution in a branch of the solution space.
+ * @param t_board the board on which the potential solution is stored
+ * @param row the row number being explored
+ * @param col the column number being explored
+ * @param board the root of the solution created by first()
+ * @param boardSize the size of the board
+ * @return 1 if there is an unexplored branch of the solution space, 0 otherwise
+ */
+int first(char **t_board, int *row, int *col, char **board, int boardSize);
 
+/**
+ * Free the memory allocated for a board.
+ * @param board the board to free
+ * @param boardSize the dimension of the board
+ */
 void free_board(char **board, int boardSize);
 
+/**
+ * Get the next possible solution in the branch of solution space by incrementing the value at (col, row) by 1. If the
+ * incremented value would exceed the maximum (9), there is no next possible solution.
+ * @param board the board on which to generate the next solution
+ * @param row the row in which the solution is being explored
+ * @param col the column in which the solution is being explored
+ * @param boardSize the size of the board
+ * @return 1 if a next possible solution exists, 0 otherwise
+ */
 int next(char **board, int row, int col, int boardSize);
 
+/**
+ * Print a board to stdout.
+ * @param board the board to print
+ * @param boardSize the size of the board
+ */
 void print_board(char **board, int boardSize);
 
 int main(void)
@@ -118,7 +186,7 @@ char **solve(char **board, int row, int col, char **dst_board, int boardSize)
     t_col   = col;
     t_board = make_board(boardSize);
     
-    cont = first(t_board, &t_col, &t_row, board, boardSize);
+    cont = first(t_board, &t_row, &t_col, board, boardSize);
     while (cont)
     {
         res = solve(t_board, t_row, t_col, dst_board, boardSize);
@@ -159,14 +227,14 @@ int reject(char **board, int row, int col, int boardSize)
     }
     
     // Check the block for the same number.
-    if (check_block(check, board, row, col, boardSize))
+    if (check_block(check, board, row, col))
     {
         return 1;
     }
     
     return 0;
 }
-int check_block(char check, char **board, int row, int col, int boardSize)
+int check_block(char check, char **board, int row, int col)
 {
     // Get the bounds of the block based on the row and column numbers.
     int row_bound_upper;
@@ -231,7 +299,7 @@ char **make_board(int boardSize)
     return board;
 }
 
-int first(char **t_board, int *col, int *row, char **board, int boardSize)
+int first(char **t_board, int *row, int *col, char **board, int boardSize)
 {
     // Put the board into the t_board, set row and col to the first appropriate values.
     for (int i = 0; i < boardSize; ++i)
