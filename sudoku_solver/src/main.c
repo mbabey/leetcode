@@ -36,6 +36,8 @@ char **solve(char **board, int row, int col, char **dst_board, int boardSize);
 
 int reject(char **board, int row, int col, int boardSize);
 
+int check_block(char check, char **board, int row, int col, int boardSize);
+
 int accept(char **board, int boardSize);
 
 char **store_solution(char **board, char **dst_board, int boardSize);
@@ -134,29 +136,60 @@ char **solve(char **board, int row, int col, char **dst_board, int boardSize)
 
 int reject(char **board, int row, int col, int boardSize)
 {
-    char c;
+    char check;
     
-    c = *(*(board + row) + col);
+    check = *(*(board + row) + col);
     
-    // Check the col for the same number.
+    // Check the row for the same number.
     for (int i = 0; i < boardSize; ++i)
     {
-        if (i != row && c == *(*(board + i) + col))
+        if (i != col && check == *(*(board + row) + i))
         {
             return 1;
         }
     }
     
-    // Check the row for the same number.
+    // Check the col for the same number.
     for (int i = 0; i < boardSize; ++i)
     {
-        if (i != col && c == *(*(board + row) + i))
+        if (i != row && check == *(*(board + i) + col))
         {
             return 1;
         }
     }
     
     // Check the block for the same number.
+    if (check_block(check, board, row, col, boardSize))
+    {
+        return 1;
+    }
+    
+    return 0;
+}
+int check_block(char check, char **board, int row, int col, int boardSize)
+{
+    // Get the bounds of the block based on the row and column numbers.
+    int row_bound_upper;
+    int col_bound_upper;
+    int row_bound_lower;
+    int col_bound_lower;
+    
+    row_bound_upper = ((row / 3) + 1) * 3;
+    col_bound_upper = ((col / 3) + 1) * 3;
+    row_bound_lower = row_bound_upper - 3;
+    col_bound_lower = col_bound_upper - 3;
+    
+    // Check the block for the corresponding character.
+    for (int r = row_bound_lower; r < row_bound_upper; ++r)
+    {
+        for (int c = col_bound_lower; c < col_bound_upper; ++c)
+        {
+            if (!(r == row && c == col) && check == *(*(board + r) + c))
+            {
+                return 1;
+            }
+        }
+    }
     
     return 0;
 }
