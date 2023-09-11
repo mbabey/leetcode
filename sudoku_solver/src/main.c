@@ -139,7 +139,29 @@ int accept(char **board, int boardSize)
 
 int first(char t_board[9][9], int *col, int *row, char **board, int boardSize)
 {
-
+    // Put the board into the t_board, set row and col to the first appropriate values.
+    for (int i = 0; i < boardSize; ++i)
+    {
+        memcpy(*(t_board + i), *(board + i), boardSize);
+    }
+    
+    // the first appropriate values are those which correspond to the topmost leftmost '.' character.
+    char c = *(*(board + *row) + *col);
+    while (*row < boardSize && c != '.')
+    {
+        ++(*col);
+        if (*col == boardSize) // Need to do the check before the assignment
+        {
+            *col = 0;
+            ++(*row);
+        }
+        if (*row < boardSize)
+        {
+            c = *(*(board + *row) + *col);
+        }
+    }
+    
+    return (*row == boardSize) ? 0 : 1;
 }
 
 int next(char board[9][9], int *row, int *col, int boardSize)
@@ -158,9 +180,13 @@ char **solve(char **board, int row, int col, char **dst_board, int boardSize)
     }
     
     int  cont;
-    int t_row;
-    int t_col;
+    int  t_row;
+    int  t_col;
     char t_board[BOARD_SIZE][BOARD_SIZE];
+    
+    t_row = row; // Start where it left off.
+    t_col = col;
+    
     cont = first(t_board, &t_col, &t_row, board, boardSize);
     while (cont)
     {
