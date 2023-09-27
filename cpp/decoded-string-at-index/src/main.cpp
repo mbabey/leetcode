@@ -33,11 +33,6 @@ public:
     }
 };
 
-/*
- * length is the null index
- * if strlen = 10 & k = 10, str + k = \0
- */
-
 int main()
 {
     
