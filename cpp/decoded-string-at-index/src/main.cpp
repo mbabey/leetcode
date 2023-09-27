@@ -1,5 +1,4 @@
 #include <iostream>
-#include <sstream>
 
 using namespace std;
 
@@ -18,7 +17,7 @@ public:
                 string current{final};
                 for (int i = 1; i < *it - '0'; ++i)
                 {
-                    final.append(current);
+                    final.append(current); // TODO: Still has memory problems; need sliding window
                 }
             } else // If the character read is a letter, that letter is written onto the tape.
             {
