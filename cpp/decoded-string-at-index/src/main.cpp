@@ -10,7 +10,7 @@ public:
     {
         string final;
         
-        for (string::iterator it = s.begin(); it != s.end(); ++it)
+        for (string::iterator it = s.begin(); it != s.end() && k > final.length(); ++it)
         {
             // If the character read is a digit d, the entire current tape is repeatedly written d - 1 more times in total.
             if (*it - '0' >= 0 && *it - '0' <= 9)
@@ -27,8 +27,9 @@ public:
         }
         
         // Second, get the char at the index. Use empty string if the index is greater than the string length.
-        string kth{((k >= final.length()) ?  "" : string(1, final.at(k)))};
-
+//        string kth{((k > final.length()) ?  "" : string(1, final.at(k - 1)))};
+        string kth{final.at(k - 1)};
+        
         return kth;
     }
 };
@@ -45,8 +46,8 @@ int main()
     k1 = 10;
     s2 = "ha22";
     k2 = 5;
-    s3 = "22";
-    k3 = 0;
+    s3 = "abc";
+    k3 = 3;
     s4 = "lb34";
     k4 = 4;
     s5 = "a2345678999999999999999";
