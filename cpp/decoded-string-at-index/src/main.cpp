@@ -33,10 +33,10 @@ public:
         }
         
         // Reverse traverse
-        while (it != s.begin() && len > k) {
+        while (--it != s.begin() && len > k) {
             
             // If char is a digit, divide the length by the digit then adjust k to fit into the new cycle size.
-            if (*it - '0' >= 0 && *it - '0' <= 9)
+            if (*it - '0' > 0 && *it - '0' <= 9)
             {
                 len /= *it - '0';
                 k %= len;
@@ -44,7 +44,6 @@ public:
             {
                 --len;
             }
-            --it;
         }
         
         return {*it};
