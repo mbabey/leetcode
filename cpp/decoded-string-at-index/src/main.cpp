@@ -15,14 +15,14 @@ public:
      */
     string decodeAtIndex(string s, int k)
     {
-        size_t len{0};
+        size_t           len{0};
         string::iterator it{s.begin()};
         
-        // Get the length of encoded s
+        // Get the length of decoded s
         while (it != s.end())
         {
             // If char is a digit, multiply the len by the digit.
-            if (*it - '0' >= 0 && *it - '0' <= 9)
+            if (*it - '0' > 1 && *it - '0' <= 9)
             {
                 len *= *it - '0';
             } else // If char is not a digit, add one to len.
@@ -32,11 +32,13 @@ public:
             ++it;
         }
         
-        // Reverse traverse
-        while (--it != s.begin() && len > k) {
-            
+        // Reverse traverse while len > k and k != 0, or while *it is a digit.
+        // Special case: k will go to 0 if len == k; the correct char is the last letter in the encoded string.
+        while (--it != s.begin() &&
+               ((len > k && k != 0) || (*it - '0' > 1 && *it - '0' <= 9)))
+        {
             // If char is a digit, divide the length by the digit then adjust k to fit into the new cycle size.
-            if (*it - '0' > 0 && *it - '0' <= 9)
+            if (*it - '0' > 1 && *it - '0' <= 9)
             {
                 len /= *it - '0';
                 k %= len;
@@ -91,19 +93,19 @@ int main()
     k2 = 5;
     s3 = "abc";
     k3 = 3;
-    s4 = "lb34";
-    k4 = 4;
+    s4 = "a2b3";
+    k4 = 9;
     s5 = "a2345678999999999999999";
     k5 = 1;
     s6 = "y959q969u3hb22odq595";
     k6 = 222280369;
     
-    cout << sol.decodeAtIndex(s1, k1) << endl; // Output: "leetleetcodeleetleetcodeleetleetcode", "o"
-    cout << sol.decodeAtIndex(s2, k2) << endl; // Output: "hahahaha", "h"
-    cout << sol.decodeAtIndex(s3, k3) << endl;
-    cout << sol.decodeAtIndex(s4, k4) << endl;
-    cout << sol.decodeAtIndex(s5, k5) << endl;
-    cout << sol.decodeAtIndex(s6, k6) << endl;
+    cout << s1 << ": " << sol.decodeAtIndex(s1, k1) << endl; // Output: "leetleetcodeleetleetcodeleetleetcode", "o"
+    cout << s2 << ": " << sol.decodeAtIndex(s2, k2) << endl; // Output: "hahahaha", "h"
+    cout << s3 << ": " << sol.decodeAtIndex(s3, k3) << endl;
+    cout << s4 << ": " << sol.decodeAtIndex(s4, k4) << endl;
+    cout << s5 << ": " << sol.decodeAtIndex(s5, k5) << endl;
+    cout << s6 << ": " << sol.decodeAtIndex(s6, k6) << endl;
     
     return 0;
 }
