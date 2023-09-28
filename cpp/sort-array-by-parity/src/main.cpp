@@ -5,7 +5,29 @@ using namespace std;
 class Solution
 {
 public:
-    vector<int> sortArrayByParity(vector<int> &nums)
+    vector<int> sortArrayByParity(vector<int> &nums) {
+        if (nums.size() <= 1)
+        {
+            return nums;
+        }
+        
+        auto front{nums.begin()}, back{nums.end() - 1};
+        
+        while (front < back) {
+            if (*front & 1 && !(*back & 1))
+            {
+                *front += *back;
+                *back = *front - *back;
+                *front -= *back;
+            }
+            front = (*front & 1) ? front : front + 1;
+            back = (*back & 1) ? back - 1 : back;
+        }
+        
+        return nums;
+    }
+    
+    vector<int> sortArrayByParityOneLine(vector<int> &nums)
     {
         sort(nums.begin(), nums.end(), [](int a, int b)
         { return (b & 1); });
@@ -13,7 +35,7 @@ public:
     }
 };
 
-void print_vec(vector<int> vec);
+void print_vec(const vector<int>& vec);
 
 int main(void)
 {
@@ -39,10 +61,10 @@ int main(void)
     return EXIT_SUCCESS;
 }
 
-void print_vec(vector<int> vec)
+void print_vec(const vector<int>& vec)
 {
     cout << "[ ";
-    for (int &i : vec)
+    for (const int &i : vec)
     {
         cout << i << " ";
     }
