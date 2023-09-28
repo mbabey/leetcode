@@ -10,6 +10,28 @@ public:
         {
             return nums;
         }
+    
+        size_t front{0}, back{nums.size() - 1};
+        
+        while (front < back) {
+            if (nums[front] & 1 && !(nums[back] & 1))
+            {
+                nums[front] += nums[back];
+                nums[back] = nums[front] - nums[back];
+                nums[front] -= nums[back];
+            }
+            front = (nums[front] & 1) ? front : front + 1;
+            back = (nums[back] & 1) ? back - 1 : back;
+        }
+        
+        return nums;
+    }
+    
+    vector<int> sortArrayByParityIterators(vector<int> &nums) {
+        if (nums.size() <= 1)
+        {
+            return nums;
+        }
         
         auto front{nums.begin()}, back{nums.end() - 1};
         
