@@ -5,7 +5,52 @@ using namespace std;
 class Solution
 {
 public:
+    
+    /**
+     * Reverse traversal algorithm. Relies on the fact that the encoded string s has cycles; the kth character can be
+     * mapped to any cycle. This algorithm maps it to the first cycle.
+     * @param s the encoded string
+     * @param k the position of the character to return
+     * @return the kth character as a string
+     */
     string decodeAtIndex(string s, int k)
+    {
+        size_t len{0};
+        string::iterator it{s.begin()};
+        
+        // Get the length of encoded s
+        while (it != s.end())
+        {
+            // If char is a digit, multiply the len by the digit.
+            if (*it - '0' >= 0 && *it - '0' <= 9)
+            {
+                len *= *it - '0';
+            } else // If char is not a digit, add one to len.
+            {
+                ++len;
+            }
+            ++it;
+        }
+        
+        // Reverse traverse
+        while (it != s.begin() && len > k) {
+            
+            // If char is a digit, divide the length by the digit then adjust k to fit into the new cycle size.
+            if (*it - '0' >= 0 && *it - '0' <= 9)
+            {
+                len /= *it - '0';
+                k %= len;
+            } else // If the char is not a digit, subtract one from the len (we are not changing cycles).
+            {
+                --len;
+            }
+            --it;
+        }
+        
+        return {*it};
+    }
+    
+    string decodeAtIndexNaive(string s, int k)
     {
         string final;
         
@@ -14,10 +59,10 @@ public:
             // If the character read is a digit d, the entire current tape is repeatedly written d - 1 more times in total.
             if (*it - '0' >= 0 && *it - '0' <= 9)
             {
-                string current{final};
+                string   current{final};
                 for (int i = 1; i < *it - '0'; ++i)
                 {
-                    final.append(current); // TODO: Still has memory problems; need sliding window
+                    final.append(current);
                 }
             } else // If the character read is a letter, that letter is written onto the tape.
             {
@@ -38,8 +83,8 @@ int main()
     
     Solution sol;
     
-    string s1, s2, s3, s4, s5;
-    int    k1, k2, k3, k4, k5;
+    string s1, s2, s3, s4, s5, s6;
+    int    k1, k2, k3, k4, k5, k6;
     
     s1 = "leet2code3";
     k1 = 10;
@@ -51,12 +96,15 @@ int main()
     k4 = 4;
     s5 = "a2345678999999999999999";
     k5 = 1;
+    s6 = "y959q969u3hb22odq595";
+    k6 = 222280369;
     
-    sol.decodeAtIndex(s1, k1); // Output: "leetleetcodeleetleetcodeleetleetcode", "o"
-    sol.decodeAtIndex(s2, k2); // Output: "hahahaha", "h"
-    sol.decodeAtIndex(s3, k3);
-    sol.decodeAtIndex(s4, k4);
-    sol.decodeAtIndex(s5, k5);
+    cout << sol.decodeAtIndex(s1, k1) << endl; // Output: "leetleetcodeleetleetcodeleetleetcode", "o"
+    cout << sol.decodeAtIndex(s2, k2) << endl; // Output: "hahahaha", "h"
+    cout << sol.decodeAtIndex(s3, k3) << endl;
+    cout << sol.decodeAtIndex(s4, k4) << endl;
+    cout << sol.decodeAtIndex(s5, k5) << endl;
+    cout << sol.decodeAtIndex(s6, k6) << endl;
     
     return 0;
 }
