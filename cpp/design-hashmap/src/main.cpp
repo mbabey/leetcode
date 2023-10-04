@@ -6,85 +6,26 @@ using namespace std;
 class MyHashMap
 {
 private:
-    struct key_value
-    {
-        int key;
-        int value;
-    };
-    
-    vector<struct key_value> map;
-    
-    int binary(int start, int end, int key)
-    {
-        if (start >= end)
-        {
-            return -1; // Does not exist.
-        }
-        
-        int size{end - start + 1};
-        int pos{(size / 2) + start};
-        
-        if (key > map[pos].key)
-        {
-            return binary(start + size / 2, end, key);
-        }
-        if (key < map[pos].key)
-        {
-            return binary(start, end - size / 2, key);
-        }
-        return pos;
-    }
-
-    void add(int key, int value)
-    {
-        struct key_value kv{};
-        kv.key   = key;
-        kv.value = value;
-        map.push_back(kv);
-        if (map.size() > 2 && map[map.size() - 2].key > kv.key)
-        {
-            sort(map.begin(), map.end(), [](struct key_value a, struct key_value b)
-            {
-                return a.key < b.key;
-            });
-        }
-    }
-    
+    int map[1000000];
 public:
-    MyHashMap() = default;
+    MyHashMap()
+    {
+        fill_n(map, sizeof(map) / sizeof(int), -1);
+    }
     
     void put(int key, int value)
     {
-        int pos = binary(0, map.size() - 1, key);
-        if (pos != -1)
-        {
-            map[pos].value = value;
-        } else
-        {
-            add(key, value);
-        }
-        
+        map[key] = value;
     }
     
     int get(int key)
     {
-        int pos = binary(0, map.size() - 1, key);
-        if (pos != -1)
-        {
-            return map[pos].value;
-        }
-        
-        return -1;
+        return map[key];
     }
     
     void remove(int key)
     {
-        int pos = binary(0, map.size() - 1, key);
-        if (pos != -1)
-        {
-            auto location = map.begin() + pos;
-            map.erase(location);
-        }
+        map[key] = -1;
     }
     
     string to_string()
@@ -92,9 +33,12 @@ public:
         stringstream ss;
         
         ss << "[ ";
-        for (struct key_value kv : map)
+        for (int i = 0; i < sizeof(map) / sizeof(int); ++i)
         {
-            ss << "[ " << kv.key << ", " << kv.value << " ]";
+            if (map[i] != -1)
+            {
+                ss << "[ " << i << ", " << map[i] << " ]";
+            }
         }
         ss << " ]";
         
@@ -174,21 +118,110 @@ void run_test3()
 {
     cout << "--Test 3--" << endl;
     MyHashMap hm{};
-    
-    for (int i = 0; i < 1000000; ++i)
-    {
-        hm.put(i, i);
-    }
-    
-    cout << hm.to_string() << endl;
-    
-    for (int i = 0; i < 1000000; ++i)
-    {
-        hm.get(i);
-    }
-    
-    for (int i = 0; i < 1000000; ++i)
-    {
-        hm.remove(i);
-    }
+
+//    cout << hm.get(222) << endl;
+//    cout << hm.get(779) << endl;
+    hm.put(565, 194);
+    hm.put(4, 73);
+    cout << hm.get(565) << endl;
+    cout << hm.get(4) << endl;
 }
+
+class MySpaceEfficientHashMap
+{
+private:
+    struct key_value
+    {
+        int key;
+        int value;
+    };
+    
+    vector<struct key_value> map;
+    
+    int binary(int start, int end, int key)
+    {
+        if (start >= end)
+        {
+            return (map.size() && map[start].key == key) ? start : -1;
+        }
+        
+        int size{end - start + 1};
+        int pos{(size / 2) + start};
+        
+        if (key > map[pos].key)
+        {
+            return binary(start + size / 2, end, key);
+        }
+        if (key < map[pos].key)
+        {
+            return binary(start, end - size / 2, key);
+        }
+        return pos;
+    }
+    
+    void add(int key, int value)
+    {
+        struct key_value kv{};
+        kv.key   = key;
+        kv.value = value;
+        map.push_back(kv);
+        if (map.size() > 1 && map[map.size() - 2].key > kv.key)
+        {
+            sort(map.begin(), map.end(), [](struct key_value a, struct key_value b)
+            {
+                return a.key < b.key;
+            });
+        }
+    }
+
+public:
+    MySpaceEfficientHashMap() = default;
+    
+    void put(int key, int value)
+    {
+        int pos = binary(0, map.size() - 1, key);
+        if (pos != -1)
+        {
+            map[pos].value = value;
+        } else
+        {
+            add(key, value);
+        }
+        
+    }
+    
+    int get(int key)
+    {
+        int pos = binary(0, map.size() - 1, key);
+        if (pos != -1)
+        {
+            return map[pos].value;
+        }
+        
+        return -1;
+    }
+    
+    void remove(int key)
+    {
+        int pos = binary(0, map.size() - 1, key);
+        if (pos != -1)
+        {
+            auto location = map.begin() + pos;
+            map.erase(location);
+        }
+    }
+    
+    string to_string()
+    {
+        stringstream ss;
+        
+        ss << "[ ";
+        for (struct key_value kv : map)
+        {
+            ss << "[ " << kv.key << ", " << kv.value << " ]";
+        }
+        ss << " ]";
+        
+        return ss.str();
+    }
+};
