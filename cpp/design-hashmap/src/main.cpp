@@ -6,7 +6,7 @@ using namespace std;
 class MyHashMap
 {
 private:
-    int map[1000000];
+    int map[1000001];
 public:
     MyHashMap()
     {
