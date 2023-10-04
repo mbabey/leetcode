@@ -35,6 +35,21 @@ private:
         return pos;
     }
 
+    void add(int key, int value)
+    {
+        struct key_value kv{};
+        kv.key   = key;
+        kv.value = value;
+        map.push_back(kv);
+        if (map.size() > 2 && map[map.size() - 2].key > kv.key)
+        {
+            sort(map.begin(), map.end(), [](struct key_value a, struct key_value b)
+            {
+                return a.key < b.key;
+            });
+        }
+    }
+    
 public:
     MyHashMap() = default;
     
@@ -46,14 +61,7 @@ public:
             map[pos].value = value;
         } else
         {
-            struct key_value kv{};
-            kv.key   = key;
-            kv.value = value;
-            map.push_back(kv);
-            sort(map.begin(), map.end(), [](struct key_value a, struct key_value b)
-            {
-                return a.key < b.key;
-            });
+            add(key, value);
         }
         
     }
