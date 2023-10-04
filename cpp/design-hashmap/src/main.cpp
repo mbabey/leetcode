@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -25,7 +26,7 @@ private:
         
         if (key > map[pos].key)
         {
-           return binary(start + size / 2, end, key);
+            return binary(start + size / 2, end, key);
         }
         if (key < map[pos].key)
         {
@@ -77,10 +78,109 @@ public:
             map.erase(location);
         }
     }
+    
+    string to_string()
+    {
+        stringstream ss;
+        
+        ss << "[ ";
+        for (struct key_value kv : map)
+        {
+            ss << "[ " << kv.key << ", " << kv.value << " ]";
+        }
+        ss << " ]";
+        
+        return ss.str();
+    }
 };
+
+void run_test1();
+
+void run_test2();
+
+void run_test3();
 
 int main()
 {
+    run_test1();
+    run_test2();
+    run_test3();
     
     return 0;
+}
+
+void run_test1()
+{
+    cout << "--Test 1--" << endl;
+    
+    MyHashMap hm{};
+    
+    hm.put(1, 1);
+    cout << hm.to_string() << endl;
+    
+    hm.put(2, 2);
+    cout << hm.to_string() << endl;
+    
+    cout << hm.get(1) << endl;
+    cout << hm.get(3) << endl;
+    
+    hm.put(2, 1);
+    cout << hm.to_string() << endl;
+    
+    cout << hm.get(2) << endl;
+    
+    hm.remove(2);
+    cout << hm.to_string() << endl;
+    
+    cout << hm.get(2) << endl;
+}
+
+void run_test2()
+{
+    cout << "--Test 2--" << endl;
+    MyHashMap hm{};
+    
+    hm.put(69, 420);
+    cout << hm.to_string() << endl;
+    
+    cout << hm.get(420) << endl;
+    cout << hm.get(69) << endl;
+    
+    hm.put(420, 69);
+    cout << hm.to_string() << endl;
+    
+    cout << hm.get(420) << endl;
+    cout << hm.get(69) << endl;
+    
+    hm.remove(69);
+    cout << hm.to_string() << endl;
+    
+    hm.put(420, 420);
+    cout << hm.to_string() << endl;
+    
+    cout << hm.get(420) << endl;
+    cout << hm.get(69) << endl;
+}
+
+void run_test3()
+{
+    cout << "--Test 3--" << endl;
+    MyHashMap hm{};
+    
+    for (int i = 0; i < 1000000; ++i)
+    {
+        hm.put(i, i);
+    }
+    
+    cout << hm.to_string() << endl;
+    
+    for (int i = 0; i < 1000000; ++i)
+    {
+        hm.get(i);
+    }
+    
+    for (int i = 0; i < 1000000; ++i)
+    {
+        hm.remove(i);
+    }
 }
