@@ -7,6 +7,46 @@ class Solution
 public:
     vector<int> majorityElement(vector<int> &nums)
     {
+        int c1{0}, c2{1}, c1c{0}, c2c{0};
+        
+        for (size_t i{0}; i < nums.size(); ++i)
+        {
+            if (nums[i] == c1)
+            {
+                ++c1c;
+            } else if (nums[i] == c2)
+            {
+                ++c2c;
+            } else if (!c1c)
+            {
+                c1  = nums[i];
+                c1c = 1;
+            } else if (!c2c)
+            {
+                c2  = nums[i];
+                c2c = 1;
+            } else
+            {
+                --c1c;
+                --c2c;
+            }
+        }
+        
+        vector<int> ans;
+        if (count(nums.begin(), nums.end(), c1) > nums.size() / 3)
+        {
+            ans.push_back(c1);
+        }
+        if (count(nums.begin(), nums.end(), c2) > nums.size() / 3)
+        {
+            ans.push_back(c2);
+        }
+        
+        return ans;
+    }
+    
+    vector<int> majorityElementNotGood(vector<int> &nums)
+    {
         size_t n{nums.size()};
         
         if (n < 3)
