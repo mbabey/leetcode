@@ -23,7 +23,7 @@ public:
         {
             start--;
         }
-        while (end < len - 1 && nums[end] == nums[end + 1])
+        while (end > 0 && end < len - 1 && nums[end] == nums[end + 1])
         {
             end++;
         }
@@ -67,11 +67,14 @@ int main()
     int t3 = 0;
     vector<int> nums4{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     int t4 = 1;
+    vector<int> nums5{1, 2, 2};
+    int t5 = 2;
     
     cout << array_to_string(s.searchRange(nums1, t1)) << endl;
     cout << array_to_string(s.searchRange(nums2, t2)) << endl;
     cout << array_to_string(s.searchRange(nums3, t3)) << endl;
     cout << array_to_string(s.searchRange(nums4, t4)) << endl;
+    cout << array_to_string(s.searchRange(nums5, t5)) << endl;
     
     return EXIT_SUCCESS;
 }
