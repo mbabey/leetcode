@@ -8,6 +8,38 @@ public:
     int minOperations(vector<int> &nums)
     {
         int len{static_cast<int>(nums.size())};
+        int solution{len - 1};
+        
+        // Sort the array.
+        sort(nums.begin(), nums.end());
+        
+        // Remove repetitive elements.
+        auto unique_end = unique(nums.begin(), nums.end());
+        nums.erase(unique_end, nums.end());
+        
+        int unique_len{static_cast<int>(nums.size())};
+        
+        int min_val, max_val, max_pos;
+        for (int i{0}; i < unique_len; ++i) {
+            // Get the current unique element
+            min_val = nums[i];
+    
+            // Calculate the maximum allowed value for the modified array
+            max_val = len - 1 + min_val;
+    
+            // Find the position of the first element greater than max_val
+            max_pos = upper_bound(nums.begin() + i, nums.end(), max_val) - nums.begin();
+    
+            // Update the solution with the minimum number of operations
+            solution = min(solution, len - max_pos + i);
+        }
+        
+        return solution;
+    }
+    
+    int minOperationsFirst(vector<int> &nums)
+    {
+        int len{static_cast<int>(nums.size())};
         
         // Edge cases:
         if (len == 1)
@@ -100,15 +132,15 @@ int main()
     vector<int> nums8{100, 97, 94, 91, 88, 85, 82, 79, 76, 73, 70, 67, 64, 61, 58, 55, 52, 49, 46, 43};
     vector<int> nums9{1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10};
     
-//    cout << "Test 1: " << s.minOperations(nums1) << endl;
-//    cout << "Test 2: " << s.minOperations(nums2) << endl;
-//    cout << "Test 3: " << s.minOperations(nums3) << endl;
+    cout << "Test 1: " << s.minOperations(nums1) << endl;
+    cout << "Test 2: " << s.minOperations(nums2) << endl;
+    cout << "Test 3: " << s.minOperations(nums3) << endl;
     cout << "Test 4: " << s.minOperations(nums4) << endl;
-//    cout << "Test 5: " << s.minOperations(nums5) << endl;
-//    cout << "Test 6: " << s.minOperations(nums6) << endl;
-//    cout << "Test 7: " << s.minOperations(nums7) << endl;
-//    cout << "Test 8: " << s.minOperations(nums8) << endl;
-//    cout << "Test 9: " << s.minOperations(nums9) << endl;
+    cout << "Test 5: " << s.minOperations(nums5) << endl;
+    cout << "Test 6: " << s.minOperations(nums6) << endl;
+    cout << "Test 7: " << s.minOperations(nums7) << endl;
+    cout << "Test 8: " << s.minOperations(nums8) << endl;
+    cout << "Test 9: " << s.minOperations(nums9) << endl;
     
     return EXIT_SUCCESS;
 }
