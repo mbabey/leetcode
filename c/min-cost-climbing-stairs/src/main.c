@@ -6,6 +6,8 @@ int **setup_testcases(void);
 
 int minCostClimbingStairs(int *cost, int costSize);
 
+int minCostClimbingStairsGreedy(int *cost, int costSize);
+
 void free_testcases(int **testcases);
 
 int main(void)
@@ -27,6 +29,27 @@ int main(void)
 
 int minCostClimbingStairs(int *cost, int costSize)
 {
+    int ans, min;
+    int *dp;
+    
+    dp = malloc(sizeof(int) * costSize);
+    
+    *(dp + costSize - 1) = *(cost + costSize - 1);
+    *(dp + costSize - 2) = *(cost + costSize - 2);
+    for (int i = costSize - 3; i >= 0; i--)
+    {
+        min = (*(dp + i + 1) < *(dp + i + 2)) ? *(dp + i + 1) : *(dp + i + 2);
+        *(dp + i) = *(cost + i) + min;
+    }
+    
+    ans = (*dp < *(dp + 1)) ? *dp : *(dp + 1);
+    free(dp);
+    
+    return ans;
+}
+
+int minCostClimbingStairsGreedy(int *cost, int costSize)
+{
     int min;
     int total_cost;
     
@@ -44,7 +67,6 @@ int minCostClimbingStairs(int *cost, int costSize)
         }
         total_cost += min;
     }
-    
     return total_cost;
 }
 
@@ -67,10 +89,10 @@ int **setup_testcases(void)
     memcpy(cost1, cost1_stack, sizeof(int) * 4);
     memcpy(cost2, cost2_stack, sizeof(int) * 11);
     
-    *testcases = cost1;
-    *(testcases + 1) = cost2;
+    *testcases               = cost1;
+    *(testcases + 1)         = cost2;
     *(testcases + NUM_CASES) = NULL;
- 
+    
     return testcases;
 }
 
