@@ -5,55 +5,14 @@ using namespace std;
 
 class Solution
 {
-private:
-    int compareBits(int a, int b) // 1 if a > b; 0 if a == b; -1 if a < b
-    {
-        int a_bit{0}, b_bit{0};
-
-        while (a)
-        {
-            if (a & 1)
-            {
-                ++a_bit;
-            }
-            a >>= 1;
-        }
-        while (b)
-        {
-            if (b & 1)
-            {
-                ++b_bit;
-            }
-            b >>= 1;
-        }
-        
-        if (a_bit > b_bit)
-        {
-            return 1;
-        }
-        if (a_bit < b_bit)
-        {
-            return -1;
-        }
-        return 0;
-    }
-
 public:
     vector<int> sortByBits(vector<int> &arr)
     {
-        int bits{0};
-        sort(arr.begin(), arr.end(), [bits, this](int a, int b) mutable -> bool
+        sort(arr.begin(), arr.end(), [](int a, int b) -> bool
         {
-            bits = compareBits(a, b);
-            if (bits > 0)
-            {
-                return false;
-            }
-            if (bits < 0)
-            {
-                return true;
-            }
-            return a < b;
+            size_t a_bits = __builtin_popcount(a);
+            size_t b_bits = __builtin_popcount(b);
+            return (a_bits == b_bits) ? a < b : a_bits < b_bits;
         });
         
         return arr;
