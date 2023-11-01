@@ -12,55 +12,48 @@ using namespace std;
       TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
       TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
  };
- 
+
 class Solution {
 private:
-    void findModeHelp(TreeNode *root, unordered_map<int, int> &map)
-    {
-        if (root == nullptr)
-        {
+    int maxCount = 0;
+    int currentCount = 0;
+    int currentVal = 0;
+    vector<int> modes;
+    
+    void inorder(TreeNode* root) {
+        if (root == nullptr) {
             return;
         }
-        findModeHelp(root->left, map);
-        findModeHelp(root->right, map);
+        inorder(root->left);
         
-        if (map.contains(root->val))
-        {
-            ++map[root->val];
-        } else
-        {
-            map.insert(pair<int, int>(root->val, 1));
+        // Check if the current value is the same as the previous one
+        if (root->val == currentVal) {
+            currentCount++;
+        } else {
+            currentVal = root->val;
+            currentCount = 1;
         }
+        
+        // Update maxCount and modes
+        if (currentCount == maxCount) {
+            modes.push_back(root->val);
+        } else if (currentCount > maxCount) {
+            modes.clear();
+            modes.push_back(root->val);
+            maxCount = currentCount;
+        }
+        
+        inorder(root->right);
     }
 
 public:
     vector<int> findMode(TreeNode* root) {
-        if (root == nullptr)
-        {
+        if (root == nullptr) {
             return {};
         }
         
-        unordered_map<int, int> map;
-        vector<pair<int, int>> vals;
-        vector<int> ans;
-        findModeHelp(root, map);
-        
-        for (auto &it : map)
-        {
-            vals.emplace_back(it);
-        }
-        
-        sort(vals.begin(), vals.end(), [](auto a, auto b) -> bool {
-            return a.second > b.second;
-        });
-        
-        int max{vals[0].second};
-        for (int i{0}; i < vals.size() && vals[i].second == max; ++i)
-        {
-            ans.push_back(vals[i].first);
-        }
-        
-        return ans;
+        inorder(root);
+        return modes;
     }
 };
 
